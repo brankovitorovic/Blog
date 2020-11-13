@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class UserController {
 
 	private final UserService userService;
-
+	
 	@PreAuthorize("hasAnyRole('ADMIN', 'PROVIDER')")
 	@DeleteMapping("/delete/existingId={existingId}")
 	public ResponseEntity<?> deleteById(@PathVariable UUID existingId) {
@@ -39,13 +39,12 @@ public class UserController {
 	}
 
 	@PostMapping("/save")
-	public ResponseEntity<UserDTO> save(@Valid @RequestBody UserDTO request) {
+	public ResponseEntity<String> save(@Valid @RequestBody UserDTO request) {
 		return new ResponseEntity<>(userService.save(request), HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasAnyRole('ADMIN', 'PROVIDER')")
-	@PutMapping("/update/existingId={existingId}")
-	public ResponseEntity<UserDTO> update(@PathVariable UUID existingId, @Valid @RequestBody UserDTO request) {
+	@PostMapping("/update/existingId={existingId}") //  it must be post for develop because of google chrome
+	public ResponseEntity<String> update(@PathVariable UUID existingId, @Valid @RequestBody UserDTO request) {
 		return new ResponseEntity<>(userService.update(existingId, request), HttpStatus.OK);
 	}
 
@@ -55,7 +54,6 @@ public class UserController {
 		return new ResponseEntity<>(userService.findByFrontUUID(id), HttpStatus.OK);
 	}
 
-	@PreAuthorize("hasAnyRole('ADMIN', 'PROVIDER')")
 	@GetMapping("/username={username}")
 	public ResponseEntity<UserDTO> findByUsername(@PathVariable String username) {
 		return new ResponseEntity<>(userService.findByUsername(username), HttpStatus.OK);
@@ -67,9 +65,9 @@ public class UserController {
 		return new ResponseEntity<>(userService.findAll(), HttpStatus.OK);
 	}
 	
-	@GetMapping("/checkToken")
-	public ResponseEntity<String> checkToken(){
-		return new ResponseEntity<>((String)SecurityContextHolder.getContext().getAuthentication().getPrincipal(),HttpStatus.OK);
+	@PostMapping("/upadeToken")
+	public ResponseEntity<String> updateToken(@Valid @RequestBody UserDTO userDTO){
+		return new ResponseEntity<>(userService.updateToken(userDTO),HttpStatus.OK);
 	}
 	
 }

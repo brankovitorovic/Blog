@@ -1,8 +1,7 @@
 package bran.packages.user.service;
 
-import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -12,6 +11,10 @@ import javax.transaction.Transactional;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
+
+import bran.packages.security.JWTConstants;
 import bran.packages.user.dto.UserDTO;
 import bran.packages.user.dto.UserRoleDTO;
 import bran.packages.user.entity.User;
@@ -47,7 +50,7 @@ public class UserService {
 	}
 
 	@Transactional
-	public UserDTO save(UserDTO request) {
+	public String save(UserDTO request) {
 		if (usernameExists(request))
 			throw new InvalidUserInfoException(
 					String.format("User with username: %s already exists!", request.getUsername()));
@@ -67,8 +70,9 @@ public class UserService {
 		request.setRoles(roles);
 		
 		User user = userRepository.save(mapper.fromDTO(request));
-
-		return mapper.toDTO(user);
+		
+		
+		return createToken(user);
 	}
 
 	private boolean usernameExists(UserDTO user) {
@@ -87,24 +91,32 @@ public class UserService {
 		return BCrypt.hashpw(plainText, BCrypt.gensalt());
 	}
 
+	
 	@Transactional
-	public UserDTO update(UUID existingId, UserDTO request) {
-
-		if (usernameExists(request))
-			throw new InvalidUserInfoException(
-					String.format("User with username: %s already exists!", request.getUsername()));
+	public String update(UUID existingId, UserDTO request) {
+		if(! findByFrontUUID(existingId).getUsername().equals(request.getUsername())) {
+			if (usernameExists(request))
+				throw new InvalidUserInfoException(
+						String.format("User with username: %s already exists!", request.getUsername()));
+		}
 		if (invalidUserRoles(request))
 			throw new InvalidUserInfoException("Invalid user roles!");
 
 		if (request.isPasswordPlain())
 			request.setPassword(hashPassword(request.getPassword()));
 
-		request.setFrontId(existingId);
-		User user = userRepository.save(mapper.fromDTO(request));
-
-		return mapper.toDTO(user);
+		final User user = userRepository.findByFrontId(request.getFrontId());
+		final User userForSave = mapper.fromDTO(request);
+		userForSave.setId(user.getId());
+		final User response = userRepository.save(userForSave);
+		
+		return createToken(response);
 	}
 
+	public String updateToken(UserDTO userDTO) {
+		return createToken(userRepository.findByFrontId(userDTO.getFrontId()));
+	}
+	
 	public UserDTO findByUsername(String username) {
 		return userRepository.findByUsername(username).map(mapper::toDTO).orElseThrow(
 				() -> new UserNotFoundException(String.format("User with username: %s wasn't found!", username)));
@@ -119,4 +131,18 @@ public class UserService {
 		return mapper.toDTOList(userRepository.findAll());
 	}
 
+	private String createToken(User user) { // when user change username or password and when token expire so it can be updated 
+		
+		String rolesToken = String.format("[ROLE_%s]",user.getRoles().stream().findFirst().get().getName() );
+		
+		String token = JWT.create()
+                .withSubject(user.getUsername())
+                .withClaim("Role", rolesToken )
+                .withExpiresAt(new Date(System.currentTimeMillis() + JWTConstants.EXPIRATION_TIME))
+                .sign(Algorithm.HMAC512(JWTConstants.SECRET_KEY));
+		
+		return JWTConstants.TOKEN_PREFIX + token;
+	}
+	
+	
 }

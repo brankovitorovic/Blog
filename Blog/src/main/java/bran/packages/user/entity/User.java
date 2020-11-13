@@ -32,7 +32,7 @@ public class User  implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long Id;
 
-	@Column(unique = true, nullable = false)
+	@Column(unique = true, nullable = false, columnDefinition = "BINARY(16)")
 	private UUID frontId;
 	
 	@Column(unique = true, nullable = false)
