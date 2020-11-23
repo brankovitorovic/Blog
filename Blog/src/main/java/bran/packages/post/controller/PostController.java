@@ -1,6 +1,7 @@
 package bran.packages.post.controller;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import bran.packages.post.dto.PostDTO;
+import bran.packages.post.enums.CategoryEnum;
 import bran.packages.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 
@@ -29,13 +31,23 @@ public class PostController {
 		return new ResponseEntity<>(postService.findAll(),HttpStatus.OK);
 	}
 	
+	@GetMapping("all/category={categoryEnum}")
+	public ResponseEntity<List<PostDTO>> findByCategory(@PathVariable CategoryEnum categoryEnum){
+		return new ResponseEntity<>(postService.findByCategory(categoryEnum),HttpStatus.OK);
+	}
+	
 	@PostMapping("save")
 	public ResponseEntity<PostDTO> save(@Valid @RequestBody PostDTO postDTO) {
 		return new ResponseEntity<>(postService.save(postDTO),HttpStatus.OK); 
 	}
 	
-	@GetMapping("user={username}")
-	public ResponseEntity<List<PostDTO>> findPostsFromUser(@PathVariable String username){ //TODO iskoristi ovo
+	@GetMapping("all/writers")
+	public ResponseEntity<Set<String>> getWriters(){
+		return new ResponseEntity<>(postService.findAllWriters(),HttpStatus.OK);
+	}
+	
+	@GetMapping("all/user={username}")
+	public ResponseEntity<List<PostDTO>> findPostsFromUser(@PathVariable String username){
 		return new ResponseEntity<>(postService.findPostsFromUser(username),HttpStatus.OK);
 	}
 	
@@ -48,6 +60,11 @@ public class PostController {
 	@PostMapping("update")
 	public ResponseEntity<PostDTO> update(@RequestBody PostDTO postDTO){
 		return new ResponseEntity<>(postService.update(postDTO),HttpStatus.OK);
+	}
+	
+	@GetMapping("all/categories")
+	public CategoryEnum[] getCategories(){
+		return postService.getCategories();
 	}
 	
 }

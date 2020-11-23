@@ -12,6 +12,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import bran.packages.post.enums.CategoryEnum;
 import bran.packages.user.entity.User;
 import lombok.Data;
 
@@ -37,10 +38,13 @@ public class Post implements Serializable{/**
 	@Column(unique = true, nullable = false,length = 50)
 	private String title;
 	
+	@Column(length = 64000)
 	private String body;
 	
 	private Date dateCreated;
 	
-	//TODO dodaj i enum kategorija pa da moze filter po tome
+	private CategoryEnum category;
+	
+	private String url;
 	
 }

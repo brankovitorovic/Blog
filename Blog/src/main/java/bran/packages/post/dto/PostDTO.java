@@ -6,6 +6,7 @@ import javax.validation.constraints.NotBlank;
 
 import com.sun.istack.NotNull;
 
+import bran.packages.post.enums.CategoryEnum;
 import bran.packages.user.dto.UserDTO;
 import lombok.Data;
 
@@ -29,5 +30,9 @@ public class PostDTO {
 	private String body;
 	
 	private Date dateCreated;
+	
+	private CategoryEnum category;
+	
+	private String url;
 	
 }

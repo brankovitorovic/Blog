@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import bran.packages.post.entity.Post;
+import bran.packages.post.enums.CategoryEnum;
 
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long>{
@@ -18,5 +19,7 @@ public interface PostRepository extends JpaRepository<Post, Long>{
 	void deleteByFrontId(Long id);
 	
 	Optional<List<Post>> findByCreatorUsername(String username);
+	
+	List<Post> findByCategory(CategoryEnum categoryEnum);
 	
 }
