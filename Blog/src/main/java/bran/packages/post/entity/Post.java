@@ -32,7 +32,7 @@ public class Post implements Serializable{/**
 	private Long frontId;
 	
 	@ManyToOne
-	@JoinColumn()
+	@JoinColumn
 	private User creator;
 	
 	@Column(unique = true, nullable = false,length = 50)
